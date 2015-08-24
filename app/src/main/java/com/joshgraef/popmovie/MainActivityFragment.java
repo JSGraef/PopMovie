@@ -2,6 +2,7 @@ package com.joshgraef.popmovie;
 
 import android.app.Fragment;
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -9,6 +10,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.GridView;
 
 import com.joshgraef.popmovie.Adapters.MovieAdapter;
@@ -56,6 +58,19 @@ public class MainActivityFragment extends Fragment {
                 mMovieAdapter = new MovieAdapter(c);
 
             gridview.setAdapter(mMovieAdapter);
+
+            // Make a listener to handle touch events on the poster (grid)
+            gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    Movie m = mMovieAdapter.getItem(position);
+
+                    // Put parcelable intent through to new activity
+                    Intent intent = new Intent(getActivity(), MovieDetails.class);
+                    intent.putExtra("MOVIE", m);
+                    startActivity(intent);
+                }
+            });
         }
 
         return v;
@@ -182,8 +197,7 @@ public class MainActivityFragment extends Fragment {
             // This will try to parse the json we received and kickstart the poster viewing process
             try
                 { return getMoviesFromJSON(movieJSONString); }
-            catch (JSONException e)
-                { Log.e("JSON ERROR: ", "error", e); }
+            catch (JSONException e) { Log.e("JSON ERROR: ", "error", e); }
 
             Log.d(LOG_TAG, "JSONSTRING: " + movieJSONString, null);
             return null;

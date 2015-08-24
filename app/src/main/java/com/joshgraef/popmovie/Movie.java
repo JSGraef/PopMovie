@@ -1,11 +1,14 @@
 package com.joshgraef.popmovie;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 /***************************************************************************************************
  * Author:          jsgraef
  * Date:            23-Aug-2015
  * Description:
  **************************************************************************************************/
-public class Movie {
+public class Movie implements Parcelable {
 
     private String  mTitle;
     private String  mPoster;
@@ -27,6 +30,14 @@ public class Movie {
         mOverview   = overview;
         mYear       = year;
         mRating     = rating;
+    }
+
+    public Movie(Parcel parcel) {
+        mTitle      = parcel.readString();
+        mPoster     = parcel.readString();
+        mOverview   = parcel.readString();
+        mYear       = parcel.readString();
+        mRating     = parcel.readString();
     }
 
     public String getPosterUrl() {
@@ -72,4 +83,29 @@ public class Movie {
     public void setmRating(String mRating) {
         this.mRating = mRating;
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+
+        parcel.writeString(mTitle);
+        parcel.writeString(mPoster);
+        parcel.writeString(mOverview);
+        parcel.writeString(mYear);
+        parcel.writeString(mRating);
+
+    }
+    public static final Parcelable.Creator<Movie> CREATOR = new Parcelable.Creator<Movie>() {
+        public Movie createFromParcel(Parcel parcel) {
+            return new Movie(parcel);
+        }
+
+        public Movie[] newArray(int i) {
+            return new Movie[i];
+        }
+    };
 }
