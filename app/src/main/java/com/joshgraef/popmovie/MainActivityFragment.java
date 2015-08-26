@@ -3,9 +3,11 @@ package com.joshgraef.popmovie;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,9 +29,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 
-/**
- * A placeholder fragment containing a simple view.
- */
+
 public class MainActivityFragment extends Fragment {
 
     private MovieAdapter mMovieAdapter;
@@ -145,11 +145,20 @@ public class MainActivityFragment extends Fragment {
                 final String MOVIEDB_BASEURL = "http://api.themoviedb.org/3/discover/movie";
                 final String API_KEY = ""; // TODO ADD API KEY HERE
                 final String SORT_POP_DESC = "popularity.desc";
-                final String SORT_POP_ASC = "popularity.asc";
+                final String SORT_RATING = "vote_average.desc";
+
+                // First need to see how we sort
+                SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(getActivity());
+                String sSortBy = p.getString(getString(R.string.pref_sort_by), getString(R.string.pref_sort_by_popularity));
+
+
+                // This only works because we're either sorting by popularity or rating.
+                // It will need to change if we offer anything more
+                boolean bSortByPopularity = (sSortBy.compareToIgnoreCase("popularity") == 0);
 
                 Uri uri = Uri.parse(MOVIEDB_BASEURL)
                         .buildUpon()
-                        .appendQueryParameter("sort_by", SORT_POP_DESC) // setting.sortbyasc ? SORT_POP_ASC : SORT_POP_DESC
+                        .appendQueryParameter("sort_by", bSortByPopularity ? SORT_POP_DESC : SORT_RATING)
                         .appendQueryParameter("api_key", API_KEY)
                         .build();
 
