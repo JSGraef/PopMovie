@@ -2,6 +2,7 @@ package com.joshgraef.popmovie;
 
 import android.app.Fragment;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -32,22 +33,27 @@ public class MovieDetailsFragment extends Fragment {
         else
             return v;
 
+        ImageView movieIcon = (ImageView)v.findViewById(R.id.ivPoster);
+        Picasso.with(getActivity()).load(movie.getPosterUrl(true /* big image */)).into(movieIcon);
+        movieIcon.setColorFilter(Color.argb(190, 22, 22, 22));
+
         TextView tvTitle = (TextView)v.findViewById(R.id.tvTitle);
         tvTitle.setText(movie.getmTitle());
 
-        ImageView movieIcon = (ImageView)v.findViewById(R.id.ivPoster);
-        Picasso.with(getActivity()).load(movie.getPosterUrl()).into(movieIcon);
-
         TextView movieYear = (TextView)v.findViewById(R.id.tvYear);
-        movieYear.setText(movie.getmYear());
+        movieYear.setText(ParseYear(movie.getmYear()));
 
         TextView movieVote = (TextView)v.findViewById(R.id.tvRating);
-        movieVote.setText(movie.getmRating());
+        movieVote.setText("Rating: " + movie.getmRating() + " / 10" );
 
         TextView movieDesc = (TextView)v.findViewById(R.id.tvOverview);
         movieDesc.setText(movie.getmOverview());
 
         return v;
+    }
+
+    private String ParseYear(String year) {
+        return year.substring(0,4);
     }
 
 }

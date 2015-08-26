@@ -40,8 +40,12 @@ public class Movie implements Parcelable {
         mRating     = parcel.readString();
     }
 
-    public String getPosterUrl() {
-        return "http://image.tmdb.org/t/p/w185" + getmPoster();
+    public String getPosterUrl(boolean bBigImage) {
+        if(bBigImage)
+            // I would do "original" but a lot of the posters are missing...
+            return "http://image.tmdb.org/t/p/w780" + getmPoster();
+        else
+            return "http://image.tmdb.org/t/p/w185" + getmPoster();
     }
 
     public String getmTitle() {

@@ -72,7 +72,7 @@ public class MovieAdapter extends BaseAdapter {
         View gv = (convertView != null) ? convertView : inflater.inflate(R.layout.griditem_movie, null);
 
         ImageView imageView = (ImageView)gv.findViewById(R.id.griditem_movie);
-        Picasso.with(mContext).load(movie.getPosterUrl()).fit().into(imageView);
+        Picasso.with(mContext).load(movie.getPosterUrl(false /* big image */)).fit().into(imageView);
 
         return gv;
     }
