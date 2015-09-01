@@ -32,17 +32,33 @@ import java.util.ArrayList;
 
 public class MainActivityFragment extends Fragment {
 
+    final static String MOVIE_LIST = "movielist";
     private MovieAdapter mMovieAdapter;
 
     public MainActivityFragment() {
     }
 
 
+    //----------------------------------------------------------------------------------------------
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        init();
+        if(mMovieAdapter == null)
+            mMovieAdapter = new MovieAdapter( getActivity() );
+
+        if(savedInstanceState != null)
+            mMovieAdapter.addMovies( (ArrayList<Movie>)savedInstanceState.get(MOVIE_LIST) );
+        else
+            init();
+    }
+
+    //----------------------------------------------------------------------------------------------
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putParcelableArrayList(MOVIE_LIST, mMovieAdapter.getMovieList());
     }
 
     //----------------------------------------------------------------------------------------------
@@ -53,9 +69,6 @@ public class MainActivityFragment extends Fragment {
         Context c = getActivity();
         if(c != null) {
             GridView gridview = (GridView) v.findViewById(R.id.gridPosters);
-
-            if(mMovieAdapter == null)
-                mMovieAdapter = new MovieAdapter(c);
 
             gridview.setAdapter(mMovieAdapter);
 
