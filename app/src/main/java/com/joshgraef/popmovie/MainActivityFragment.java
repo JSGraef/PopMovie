@@ -137,7 +137,7 @@ public class MainActivityFragment extends Fragment {
     }
 
     //----------------------------------------------------------------------------------------------
-    private class FetchMovieTask extends AsyncTask<Movie, Void, ArrayList<Movie>> {
+    public class FetchMovieTask extends AsyncTask<Movie, Void, ArrayList<Movie>> {
 
         private final String LOG_TAG = FetchMovieTask.class.getSimpleName();
 

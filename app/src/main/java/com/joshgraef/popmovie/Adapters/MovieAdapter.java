@@ -14,6 +14,9 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
+
 /***************************************************************************************************
  * Author:          jsgraef
  * Date:            20-Aug-2015
@@ -35,6 +38,35 @@ public class MovieAdapter extends BaseAdapter {
     public MovieAdapter(Context c, ArrayList<Movie> data) {
         mContext = c;
         mMovies = data;
+    }
+
+    //----------------------------------------------------------------------------------------------
+    // create a new ImageView for each item referenced by the Adapter
+    public View getView(int position, View convertView, ViewGroup parent) {
+        LayoutInflater inflater = ((Activity)mContext).getLayoutInflater();
+
+        ViewHolder holder;
+        if(convertView != null) {
+            holder = (ViewHolder) convertView.getTag();
+        } else {
+            convertView = inflater.inflate(R.layout.griditem_movie, null);
+            holder = new ViewHolder(convertView);
+            convertView.setTag(holder);
+        }
+
+        // Get the movie
+        Movie movie = mMovies.get(position);
+        Picasso.with(mContext).load(movie.getPosterUrl(false /* big image */)).fit().into(holder.imageView);
+
+        return convertView;
+    }
+
+    static class ViewHolder {
+        @Bind(R.id.griditem_movie) ImageView imageView;
+
+        public ViewHolder(View view) {
+            ButterKnife.bind(this, view);
+        }
     }
 
     //----------------------------------------------------------------------------------------------
@@ -71,22 +103,6 @@ public class MovieAdapter extends BaseAdapter {
     //----------------------------------------------------------------------------------------------
     public long getItemId(int position) {
         return 0;
-    }
-
-    //----------------------------------------------------------------------------------------------
-    // create a new ImageView for each item referenced by the Adapter
-    public View getView(int position, View convertView, ViewGroup parent) {
-        LayoutInflater inflater = ((Activity)mContext).getLayoutInflater();
-
-        // Get the movie
-        Movie movie = mMovies.get(position);
-
-        View gv = (convertView != null) ? convertView : inflater.inflate(R.layout.griditem_movie, null);
-
-        ImageView imageView = (ImageView)gv.findViewById(R.id.griditem_movie);
-        Picasso.with(mContext).load(movie.getPosterUrl(false /* big image */)).fit().into(imageView);
-
-        return gv;
     }
 
 }
