@@ -4,6 +4,8 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -14,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
+import android.widget.Toast;
 
 import com.joshgraef.popmovie.Adapters.MovieAdapter;
 
@@ -30,10 +33,12 @@ import java.net.URL;
 import java.util.ArrayList;
 
 
-public class MainActivityFragment extends Fragment {
+public class MainActivityFragment extends Fragment { //implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     final static String MOVIE_LIST = "movielist";
+    final static String SORT_PREF = "sortpref";
     private MovieAdapter mMovieAdapter;
+    private SharedPreferences mPrefs;
 
     public MainActivityFragment() {
     }
@@ -44,14 +49,32 @@ public class MainActivityFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        mPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+       // mPrefs.registerOnSharedPreferenceChangeListener(this);
+
+        //PreferenceManager.getDefaultSharedPreferences(getActivity()).registerOnSharedPreferenceChangeListener(this);
+
         if(mMovieAdapter == null)
             mMovieAdapter = new MovieAdapter( getActivity() );
 
-        if(savedInstanceState != null)
-            mMovieAdapter.addMovies( (ArrayList<Movie>)savedInstanceState.get(MOVIE_LIST) );
-        else
-            init();
+        if(savedInstanceState != null) {
+            String sortby = mPrefs.getString(getString(R.string.pref_sort_by), getString(R.string.pref_sort_by_popularity));
+            // if there's no discrepancy in sort type, carry on
+            if (savedInstanceState.getString(SORT_PREF).compareToIgnoreCase(sortby) == 0) {
+                mMovieAdapter.addMovies((ArrayList<Movie>) savedInstanceState.get(MOVIE_LIST));
+                return;
+            }
+        }
+
+        init();
     }
+
+    //----------------------------------------------------------------------------------------------
+//    @Override
+//    public void onDestroy() {
+//        super.onDestroy();
+//        mPrefs.unregisterOnSharedPreferenceChangeListener(this);
+//    }
 
     //----------------------------------------------------------------------------------------------
     @Override
@@ -59,6 +82,7 @@ public class MainActivityFragment extends Fragment {
         super.onSaveInstanceState(outState);
 
         outState.putParcelableArrayList(MOVIE_LIST, mMovieAdapter.getMovieList());
+        outState.putString(SORT_PREF, mPrefs.getString(getString(R.string.pref_sort_by), getString(R.string.pref_sort_by_popularity)) );
     }
 
     //----------------------------------------------------------------------------------------------
@@ -69,7 +93,6 @@ public class MainActivityFragment extends Fragment {
         Context c = getActivity();
         if(c != null) {
             GridView gridview = (GridView) v.findViewById(R.id.gridPosters);
-
             gridview.setAdapter(mMovieAdapter);
 
             // Make a listener to handle touch events on the poster (grid)
@@ -90,11 +113,30 @@ public class MainActivityFragment extends Fragment {
     }
 
     //----------------------------------------------------------------------------------------------
+//    @Override
+//    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+//        // 'Refresh' list based on new preferences
+//        init();
+//    }
+
+    //----------------------------------------------------------------------------------------------
     // Initialization done here
     private void init() {
-        // Get movies from API
-        FetchMovieTask fetchMovieTask = new FetchMovieTask();
-        fetchMovieTask.execute();
+        // Get movies from API if we have internet connection
+        if(isNetworkAvailable()) {
+            FetchMovieTask fetchMovieTask = new FetchMovieTask();
+            fetchMovieTask.execute();
+        }
+        else
+            Toast.makeText(getActivity(), "Cannot connect to internet.", Toast.LENGTH_SHORT);
+    }
+
+    //----------------------------------------------------------------------------------------------
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 
     //----------------------------------------------------------------------------------------------
@@ -113,6 +155,7 @@ public class MainActivityFragment extends Fragment {
         final String ML_DATE        = "release_date";
         final String ML_TITLE       = "title";
         final String ML_RATING      = "vote_average";
+        final String ML_ID          = "id";
 
         JSONObject movies = new JSONObject(sMovieList);
         JSONArray resultsArr = movies.getJSONArray(ML_RESULTS);
@@ -127,9 +170,10 @@ public class MainActivityFragment extends Fragment {
             String sDate        = obj.getString(ML_DATE);
             String sTitle       = obj.getString(ML_TITLE);
             String sRating      = obj.getString(ML_RATING);
+            String sID          = obj.getString(ML_ID);
 
             // Add this movie to the movie manager list
-            Movie movie = new Movie(sTitle, sPosterPath, sOverview, sDate, sRating);
+            Movie movie = new Movie(sTitle, sPosterPath, sOverview, sDate, sRating, sID);
             movieList.add(movie);
         }
 
@@ -161,8 +205,7 @@ public class MainActivityFragment extends Fragment {
                 final String SORT_RATING = "vote_average.desc";
 
                 // First need to see how we sort
-                SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(getActivity());
-                String sSortBy = p.getString(getString(R.string.pref_sort_by), getString(R.string.pref_sort_by_popularity));
+                String sSortBy = mPrefs.getString(getString(R.string.pref_sort_by), getString(R.string.pref_sort_by_popularity));
 
 
                 // This only works because we're either sorting by popularity or rating.

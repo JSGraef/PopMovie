@@ -39,7 +39,7 @@ public class MovieDetailsFragment extends Fragment {
         Movie movie;
 
         if (intent != null && intent.hasExtra("MOVIE"))
-            movie = (Movie)intent.getParcelableExtra("MOVIE");
+            movie = intent.getParcelableExtra("MOVIE");
         else
             return v;
 

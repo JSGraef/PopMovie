@@ -15,6 +15,7 @@ public class Movie implements Parcelable {
     private String  mOverview;
     private String  mYear;
     private String  mRating;
+    private String  mMovieID;
 
     public Movie() {
         mTitle      = "";
@@ -22,14 +23,16 @@ public class Movie implements Parcelable {
         mOverview   = "";
         mYear       = "";
         mRating     = "";
+        mMovieID    = "";
     }
 
-    public Movie(String title, String poster, String overview, String year, String rating) {
+    public Movie(String title, String poster, String overview, String year, String rating, String id) {
         mTitle      = title;
         mPoster     = poster;
         mOverview   = overview;
         mYear       = year;
         mRating     = rating;
+        mMovieID    = id;
     }
 
     public Movie(Parcel parcel) {
@@ -38,7 +41,34 @@ public class Movie implements Parcelable {
         mOverview   = parcel.readString();
         mYear       = parcel.readString();
         mRating     = parcel.readString();
+        mMovieID    = parcel.readString();
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+
+        parcel.writeString(mTitle);
+        parcel.writeString(mPoster);
+        parcel.writeString(mOverview);
+        parcel.writeString(mYear);
+        parcel.writeString(mRating);
+        parcel.writeString(mMovieID);
+    }
+
+    public static final Parcelable.Creator<Movie> CREATOR = new Parcelable.Creator<Movie>() {
+        public Movie createFromParcel(Parcel parcel) {
+            return new Movie(parcel);
+        }
+
+        public Movie[] newArray(int i) {
+            return new Movie[i];
+        }
+    };
 
     public String getPosterUrl(boolean bBigImage) {
         if(bBigImage)
@@ -87,29 +117,4 @@ public class Movie implements Parcelable {
     public void setmRating(String mRating) {
         this.mRating = mRating;
     }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel parcel, int i) {
-
-        parcel.writeString(mTitle);
-        parcel.writeString(mPoster);
-        parcel.writeString(mOverview);
-        parcel.writeString(mYear);
-        parcel.writeString(mRating);
-
-    }
-    public static final Parcelable.Creator<Movie> CREATOR = new Parcelable.Creator<Movie>() {
-        public Movie createFromParcel(Parcel parcel) {
-            return new Movie(parcel);
-        }
-
-        public Movie[] newArray(int i) {
-            return new Movie[i];
-        }
-    };
 }
