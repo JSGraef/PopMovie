@@ -8,7 +8,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 
-import com.joshgraef.popmovie.Movie;
+import com.joshgraef.popmovie.Models.Movie;
 import com.joshgraef.popmovie.R;
 import com.squareup.picasso.Picasso;
 
@@ -56,7 +56,9 @@ public class MovieAdapter extends BaseAdapter {
 
         // Get the movie
         Movie movie = mMovies.get(position);
-        Picasso.with(mContext).load(movie.getPosterUrl(false /* big image */)).fit().into(holder.imageView);
+        String sPosterURL = movie.getPosterUrl(false /*big image*/);
+        if(!sPosterURL.isEmpty())
+            Picasso.with(mContext).load(sPosterURL).fit().into(holder.imageView);
 
         return convertView;
     }

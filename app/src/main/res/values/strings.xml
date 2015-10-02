@@ -10,6 +10,13 @@
     <string name="pref_sort_by_popularity">Popularity</string>
     <string name="pref_sort_by_rating">Highest Rated</string>
 
+    <string name="details_movieposterimage">Movie Poster Image</string>
+    <string name="details_descriptionHeader">DESCRIPTION</string>
+    <string name="details_TrailersHeader">TRAILERS</string>
+    <string name="details_ReviewsHeader">REVIEWS</string>
+
+    <string name="tag_video">TAG_VIDEO</string>
+
     <string-array name="pref_sort_by_values">
         <item>@string/pref_sort_by_popularity</item>
         <item>@string/pref_sort_by_rating</item>

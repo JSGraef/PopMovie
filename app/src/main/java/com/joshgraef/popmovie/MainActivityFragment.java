@@ -6,8 +6,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -19,21 +17,16 @@ import android.widget.GridView;
 import android.widget.Toast;
 
 import com.joshgraef.popmovie.Adapters.MovieAdapter;
+import com.joshgraef.popmovie.Interfaces.IMovieDB;
+import com.joshgraef.popmovie.Models.Movie;
+import com.joshgraef.popmovie.Models.MovieResult;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 
+import retrofit.RestAdapter;
+import retrofit.RetrofitError;
 
-public class MainActivityFragment extends Fragment { //implements SharedPreferences.OnSharedPreferenceChangeListener {
+public class MainActivityFragment extends Fragment {
 
     final static String MOVIE_LIST = "movielist";
     final static String SORT_PREF = "sortpref";
@@ -68,13 +61,6 @@ public class MainActivityFragment extends Fragment { //implements SharedPreferen
 
         init();
     }
-
-    //----------------------------------------------------------------------------------------------
-//    @Override
-//    public void onDestroy() {
-//        super.onDestroy();
-//        mPrefs.unregisterOnSharedPreferenceChangeListener(this);
-//    }
 
     //----------------------------------------------------------------------------------------------
     @Override
@@ -112,20 +98,42 @@ public class MainActivityFragment extends Fragment { //implements SharedPreferen
         return v;
     }
 
-    //----------------------------------------------------------------------------------------------
-//    @Override
-//    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-//        // 'Refresh' list based on new preferences
-//        init();
-//    }
 
     //----------------------------------------------------------------------------------------------
     // Initialization done here
     private void init() {
         // Get movies from API if we have internet connection
         if(isNetworkAvailable()) {
-            FetchMovieTask fetchMovieTask = new FetchMovieTask();
-            fetchMovieTask.execute();
+
+            RestAdapter restAdapter = new RestAdapter.Builder()
+                    .setEndpoint(IMovieDB.API_BASE_URL)
+                    .build();
+
+            IMovieDB movieDB = restAdapter.create(IMovieDB.class);
+
+            // First need to see how we sort
+            String sSortBy = mPrefs.getString(getString(R.string.pref_sort_by), getString(R.string.pref_sort_by_popularity));
+
+            // This only works because we're either sorting by popularity or rating.
+            // It will need to change if we offer anything more
+            boolean bSortByPopularity = (sSortBy.compareToIgnoreCase("popularity") == 0);
+
+
+            movieDB.getMovies(IMovieDB.API_KEY,
+                    bSortByPopularity ? IMovieDB.SORT_POP_DESC : IMovieDB.SORT_RATING,
+                    new retrofit.Callback<MovieResult>() {
+                @Override
+                public void success(MovieResult movieResult, retrofit.client.Response response) {
+                    ArrayList<Movie> movieList = movieResult.results;
+                    mMovieAdapter.addMovies(movieList);
+                }
+
+                @Override
+                public void failure(RetrofitError error) {
+                    Log.e("IMovieDB", error.getMessage());
+                    Toast.makeText(getActivity(), "Cannot load movies at this time", Toast.LENGTH_LONG).show();
+                }
+            });
         }
         else
             Toast.makeText(getActivity(), "Cannot connect to internet.", Toast.LENGTH_SHORT);
@@ -139,147 +147,4 @@ public class MainActivityFragment extends Fragment { //implements SharedPreferen
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 
-    //----------------------------------------------------------------------------------------------
-    private ArrayList<Movie> getMoviesFromJSON(String sMovieList)
-        throws JSONException {
-
-        if(sMovieList == null)
-            return null;
-
-        ArrayList<Movie> movieList = new ArrayList<>();
-
-        // Defining constants in case they change...
-        final String ML_RESULTS     = "results";
-        final String ML_POSTER      = "poster_path";
-        final String ML_OVERVIEW    = "overview";
-        final String ML_DATE        = "release_date";
-        final String ML_TITLE       = "title";
-        final String ML_RATING      = "vote_average";
-        final String ML_ID          = "id";
-
-        JSONObject movies = new JSONObject(sMovieList);
-        JSONArray resultsArr = movies.getJSONArray(ML_RESULTS);
-
-        // Traverse JSON result array and add movies as we get them
-        int length = resultsArr.length();
-        for(int i=0; i<length; i++) {
-            JSONObject obj = resultsArr.getJSONObject(i);
-
-            String sPosterPath  = obj.getString(ML_POSTER);
-            String sOverview    = obj.getString(ML_OVERVIEW);
-            String sDate        = obj.getString(ML_DATE);
-            String sTitle       = obj.getString(ML_TITLE);
-            String sRating      = obj.getString(ML_RATING);
-            String sID          = obj.getString(ML_ID);
-
-            // Add this movie to the movie manager list
-            Movie movie = new Movie(sTitle, sPosterPath, sOverview, sDate, sRating, sID);
-            movieList.add(movie);
-        }
-
-        return movieList;
-    }
-
-    //----------------------------------------------------------------------------------------------
-    public class FetchMovieTask extends AsyncTask<Movie, Void, ArrayList<Movie>> {
-
-        private final String LOG_TAG = FetchMovieTask.class.getSimpleName();
-
-        @Override
-        protected ArrayList<Movie> doInBackground(Movie... params) {
-            // These two need to be declared outside the try/catch
-            // so that they can be closed in the finally block.
-            HttpURLConnection urlConnection = null;
-            BufferedReader reader = null;
-
-            // Will contain the raw JSON response as a string.
-            String movieJSONString = null;
-
-            try {
-                // Keeping to show what URL looks like
-                // URL url = new URL("http://api.themoviedb.org/3/discover/movie?sort_by=popularity.desc&api_key=[API KEY]");
-
-                final String MOVIEDB_BASEURL = "http://api.themoviedb.org/3/discover/movie";
-                final String API_KEY = ""; // TODO ADD API KEY HERE
-                final String SORT_POP_DESC = "popularity.desc";
-                final String SORT_RATING = "vote_average.desc";
-
-                // First need to see how we sort
-                String sSortBy = mPrefs.getString(getString(R.string.pref_sort_by), getString(R.string.pref_sort_by_popularity));
-
-
-                // This only works because we're either sorting by popularity or rating.
-                // It will need to change if we offer anything more
-                boolean bSortByPopularity = (sSortBy.compareToIgnoreCase("popularity") == 0);
-
-                Uri uri = Uri.parse(MOVIEDB_BASEURL)
-                        .buildUpon()
-                        .appendQueryParameter("sort_by", bSortByPopularity ? SORT_POP_DESC : SORT_RATING)
-                        .appendQueryParameter("api_key", API_KEY)
-                        .build();
-
-                URL url = new URL(uri.toString());
-
-
-                // Create the request to Movie Database, and open the connection
-                urlConnection = (HttpURLConnection) url.openConnection();
-                urlConnection.setRequestMethod("GET");
-                urlConnection.connect();
-
-                // Read the input stream into a String
-                InputStream inputStream = urlConnection.getInputStream();
-                StringBuffer buffer = new StringBuffer();
-                if (inputStream == null)
-                    return null;
-
-                reader = new BufferedReader(new InputStreamReader(inputStream));
-
-                String line;
-                while ((line = reader.readLine()) != null)
-                    buffer.append(line + "\n");
-
-                if (buffer.length() == 0)
-                    return null;
-
-                movieJSONString = buffer.toString();
-
-            } catch (IOException e) {
-                Log.e(LOG_TAG, "Error ", e);
-                return null;
-            } finally {
-                if (urlConnection != null)
-                    urlConnection.disconnect();
-
-                if (reader != null) {
-                    try {
-                        reader.close();
-                    } catch (final IOException e) {
-                        Log.e(LOG_TAG, "Error closing stream", e);
-                    }
-                }
-            }
-
-            // This will try to parse the json we received and kickstart the poster viewing process
-            try
-                { return getMoviesFromJSON(movieJSONString); }
-            catch (JSONException e) { Log.e("JSON ERROR: ", "error", e); }
-
-            Log.d(LOG_TAG, "JSONSTRING: " + movieJSONString, null);
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(ArrayList<Movie> movieList) {
-            super.onPostExecute(movieList);
-
-            // If list is empty, just get out
-            if(movieList == null)
-                return;
-
-            // Update adapter
-            mMovieAdapter.clear();
-            mMovieAdapter.addMovies(movieList);
-
-        }
-    }
 }

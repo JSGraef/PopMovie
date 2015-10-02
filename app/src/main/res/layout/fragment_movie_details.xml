@@ -1,47 +1,171 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <ImageView
-        android:id="@+id/ivPoster"
+    <LinearLayout
+        android:id="@+id/lvDetails"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent"/>
+        android:layout_height="fill_parent"
+        android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/tvTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Large Text"
-        android:layout_margin="15dp"
-        android:textSize="24dp"
-        android:textStyle="bold" />
+        <RelativeLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp">
 
-    <TextView
-        android:id="@+id/tvYear"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:layout_below="@+id/tvTitle"
-        android:text="Large Text"
-        android:layout_marginLeft="15dp" />
+            <ImageView
+                android:id="@+id/ivPoster"
+                android:layout_width="154dp"
+                android:layout_height="251dp"
+                android:contentDescription="@string/details_movieposterimage" />
 
-    <TextView
-        android:id="@+id/tvRating"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:layout_below="@+id/tvTitle"
-        android:layout_toRightOf="@+id/tvYear"
-        android:text="Large Text"
-        android:layout_marginLeft="15dp" />
+            <TextView
+                android:id="@+id/tvTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:text="Large Text"
+                android:layout_margin="15dp"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:layout_toRightOf="@+id/ivPoster"/>
 
-    <TextView
-        android:id="@+id/tvOverview"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:text="Large Text"
-        android:layout_margin="15dp" />
-</RelativeLayout>
+            <TextView
+                android:id="@+id/tvYear"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:layout_below="@+id/tvTitle"
+                android:layout_toRightOf="@+id/ivPoster"
+                android:text="Large Text"
+                android:layout_marginLeft="15dp" />
+
+            <TextView
+                android:id="@+id/tvRating"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:layout_below="@+id/tvYear"
+                android:layout_toRightOf="@+id/ivPoster"
+                android:text="Large Text"
+                android:layout_marginLeft="15dp" />
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="15dp">
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:paddingBottom="8dp"
+                android:background="?android:attr/listDivider" />
+
+            <TextView
+                android:id="@+id/txtHeaderTitle"
+                android:layout_marginTop="8dp"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/details_descriptionHeader"
+                android:fontFamily="sans-serif-medium" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray"/>
+
+            <TextView
+                android:id="@+id/tvOverview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Large Text"
+                android:layout_below="@+id/txtHeaderTitle"/>
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="15dp">
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:paddingBottom="8dp"
+                android:background="?android:attr/listDivider" />
+
+            <TextView
+                android:id="@+id/txtTrailerTitle"
+                android:layout_marginTop="8dp"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/details_TrailersHeader"
+                android:fontFamily="sans-serif-medium" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray"/>
+
+            <LinearLayout
+                android:id="@+id/lvTrailers"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:orientation="vertical"
+                android:layout_below="@id/txtTrailerTitle"/>
+
+            <TextView
+                android:id="@+id/tvTrailers"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/txtTrailerTitle"/>
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="15dp">
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:paddingBottom="8dp"
+                android:background="?android:attr/listDivider" />
+
+            <TextView
+                android:id="@+id/txtReviewTitle"
+                android:layout_marginTop="8dp"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/details_ReviewsHeader"
+                android:fontFamily="sans-serif-medium" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray"/>
+
+            <LinearLayout
+                android:id="@+id/lvReviews"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:orientation="vertical"
+                android:layout_below="@id/txtReviewTitle"/>
+
+            <TextView
+                android:id="@+id/tvReviews"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/txtReviewTitle"/>
+
+        </RelativeLayout>
+
+    </LinearLayout>
+
+
+</ScrollView>
