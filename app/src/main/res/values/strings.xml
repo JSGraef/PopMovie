@@ -9,6 +9,7 @@
     <string name="sp_sort">sortby</string>
     <string name="pref_sort_by_popularity">Popularity</string>
     <string name="pref_sort_by_rating">Highest Rated</string>
+    <string name="pref_sort_by_favorites">Favorites</string>
 
     <string name="details_movieposterimage">Movie Poster Image</string>
     <string name="details_descriptionHeader">DESCRIPTION</string>
@@ -16,9 +17,14 @@
     <string name="details_ReviewsHeader">REVIEWS</string>
 
     <string name="tag_video">TAG_VIDEO</string>
+    <string name="button_savetofavorites">Save to Favorites</string>
+    <string name="button_favorited">Favorited!</string>
+    <string name="action_showFavorites">Show Favorites</string>
+
 
     <string-array name="pref_sort_by_values">
         <item>@string/pref_sort_by_popularity</item>
         <item>@string/pref_sort_by_rating</item>
+        <item>@string/pref_sort_by_favorites</item>
     </string-array>
 </resources>

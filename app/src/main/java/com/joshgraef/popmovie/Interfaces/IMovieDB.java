@@ -17,7 +17,7 @@ import retrofit.http.Query;
 public interface IMovieDB {
 
     public static final String API_BASE_URL = "http://api.themoviedb.org/3";
-    public static final String API_KEY = "";
+    public static final String API_KEY = "e8f0c5dbd0a9283a85d785e80f9869d8"; // TODO Remove
     public static final String SORT_POP_DESC = "popularity.desc";
     public static final String SORT_RATING = "vote_average.desc";
 

@@ -1,6 +1,7 @@
 package com.joshgraef.popmovie;
 
 import android.app.Fragment;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -9,11 +10,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.joshgraef.popmovie.ComplexPreferences.ComplexPreferences;
 import com.joshgraef.popmovie.Interfaces.IMovieDB;
 import com.joshgraef.popmovie.Models.Movie;
 import com.joshgraef.popmovie.Models.Review;
@@ -45,6 +48,7 @@ public class MovieDetailsFragment extends Fragment {
     @Bind(R.id.tvReviews)       TextView tvReviews;
     @Bind(R.id.lvTrailers)      LinearLayout lvTrailers;
     @Bind(R.id.lvReviews)       LinearLayout lvReviews;
+    @Bind(R.id.btnFavorite)     Button btnFavorite;
 
     final static String SAVED_MOVIE = "savedmovie";
     final static String SAVED_TRAILERS = "savedtrailers";
@@ -53,6 +57,9 @@ public class MovieDetailsFragment extends Fragment {
     private Movie mMovie;
     private List<Video> mVideos;
     private List<Review> mReviews;
+
+    // For favorites
+    private Favorites mFavorites;
 
     public MovieDetailsFragment() {
     }
@@ -66,11 +73,13 @@ public class MovieDetailsFragment extends Fragment {
         Intent intent = getActivity().getIntent();
 
         Bundle args = getArguments();
+        // Come here from another activity
         if(args != null && savedInstanceState != null) {
             mMovie = args.getParcelable("MOVIE");
             getTrailersAndReviews(inflater);
         }
-        else if(savedInstanceState != null){
+        // Maybe a rotation change? Load the stuff that we have cached already
+        else if(savedInstanceState != null) {
             mMovie = savedInstanceState.getParcelable(SAVED_MOVIE);
             mVideos = savedInstanceState.getParcelableArrayList(SAVED_TRAILERS);
             mReviews = savedInstanceState.getParcelableArrayList(SAVED_REVIEWS);
@@ -81,6 +90,7 @@ public class MovieDetailsFragment extends Fragment {
             for (Review review : mReviews)
                 lvReviews.addView( getReviewView(review, inflater) );
         }
+        // Have stuff saved as a parcel, but still need to get trailers and reviews
         else if (intent != null && intent.hasExtra("MOVIE")) {
             mMovie = intent.getParcelableExtra("MOVIE");
             getTrailersAndReviews(inflater);
@@ -91,6 +101,29 @@ public class MovieDetailsFragment extends Fragment {
 
         // Populate our view with our data... if we can
         if(mMovie != null)  {
+
+            ComplexPreferences prefs = ComplexPreferences.getComplexPreferences(getActivity(), "favorites", Context.MODE_PRIVATE);
+            mFavorites = prefs.getObject("movies", Favorites.class);
+
+            boolean bIsFavorite = (mFavorites != null) ? mFavorites.isMovieAFavorite(mMovie.getId()) : false;
+
+            if(bIsFavorite)
+                btnFavorite.setText(R.string.button_favorited);
+
+            btnFavorite.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View view) {
+                    boolean bIsFavorite = mFavorites.isMovieAFavorite(mMovie.getId());
+                    if(bIsFavorite) {
+                        mFavorites.remove(mMovie.getId());
+                        btnFavorite.setText( R.string.button_savetofavorites );
+                    } else {
+                        mFavorites.add(mMovie);
+                        btnFavorite.setText(R.string.button_favorited);
+                    }
+
+                    savePrefs();
+                }
+            });
 
             // Load image with picasso and also darken is to the text pops out a bit
             Picasso.with(getActivity()).load(mMovie.getPosterUrl(false /* big image */)).into(movieIcon);
@@ -168,7 +201,15 @@ public class MovieDetailsFragment extends Fragment {
         outState.putParcelable(SAVED_MOVIE, mMovie);
         outState.putParcelableArrayList(SAVED_TRAILERS, (ArrayList) mVideos);
         outState.putParcelableArrayList(SAVED_REVIEWS, (ArrayList) mReviews);
+
         super.onSaveInstanceState(outState);
+    }
+
+    //----------------------------------------------------------------------------------------------
+    public void savePrefs() {
+        ComplexPreferences prefs = ComplexPreferences.getComplexPreferences(getActivity(), "favorites", Context.MODE_PRIVATE);
+        prefs.putObject("movies", mFavorites);
+        prefs.commit();
     }
 
     //----------------------------------------------------------------------------------------------

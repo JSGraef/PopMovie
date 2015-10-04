@@ -17,6 +17,7 @@ import android.widget.GridView;
 import android.widget.Toast;
 
 import com.joshgraef.popmovie.Adapters.MovieAdapter;
+import com.joshgraef.popmovie.ComplexPreferences.ComplexPreferences;
 import com.joshgraef.popmovie.Interfaces.IMovieDB;
 import com.joshgraef.popmovie.Models.Movie;
 import com.joshgraef.popmovie.Models.MovieResult;
@@ -32,6 +33,7 @@ public class MainActivityFragment extends Fragment {
     final static String SORT_PREF = "sortpref";
     private MovieAdapter mMovieAdapter;
     private SharedPreferences mPrefs;
+    private Favorites mFavorites;
 
     public MainActivityFragment() {
     }
@@ -49,6 +51,9 @@ public class MainActivityFragment extends Fragment {
 
         if(mMovieAdapter == null)
             mMovieAdapter = new MovieAdapter( getActivity() );
+
+        ComplexPreferences prefs = ComplexPreferences.getComplexPreferences(getActivity(), "favorites", Context.MODE_PRIVATE);
+        mFavorites = prefs.getObject("movies", Favorites.class);
 
         if(savedInstanceState != null) {
             String sortby = mPrefs.getString(getString(R.string.pref_sort_by), getString(R.string.pref_sort_by_popularity));
@@ -102,22 +107,28 @@ public class MainActivityFragment extends Fragment {
     //----------------------------------------------------------------------------------------------
     // Initialization done here
     private void init() {
+
+        // First need to see how we sort
+        String sSortBy = mPrefs.getString(getString(R.string.pref_sort_by), getString(R.string.pref_sort_by_popularity));
+
+        // If we want to see our favorites, then we don't need any network calls.
+        if( sSortBy.compareToIgnoreCase("favorites") == 0) {
+            mMovieAdapter.addMovies(mFavorites.getFavorites());
+            return;
+        }
+
         // Get movies from API if we have internet connection
         if(isNetworkAvailable()) {
+
+            // This only works because we're either sorting by popularity or rating.
+            // It will need to change if we offer anything more
+            boolean bSortByPopularity = (sSortBy.compareToIgnoreCase("popularity") == 0);
 
             RestAdapter restAdapter = new RestAdapter.Builder()
                     .setEndpoint(IMovieDB.API_BASE_URL)
                     .build();
 
             IMovieDB movieDB = restAdapter.create(IMovieDB.class);
-
-            // First need to see how we sort
-            String sSortBy = mPrefs.getString(getString(R.string.pref_sort_by), getString(R.string.pref_sort_by_popularity));
-
-            // This only works because we're either sorting by popularity or rating.
-            // It will need to change if we offer anything more
-            boolean bSortByPopularity = (sSortBy.compareToIgnoreCase("popularity") == 0);
-
 
             movieDB.getMovies(IMovieDB.API_KEY,
                     bSortByPopularity ? IMovieDB.SORT_POP_DESC : IMovieDB.SORT_RATING,
@@ -135,8 +146,12 @@ public class MainActivityFragment extends Fragment {
                 }
             });
         }
-        else
+        else {
             Toast.makeText(getActivity(), "Cannot connect to internet.", Toast.LENGTH_SHORT);
+
+            // Since no network, just show favorites since we have nothing else to show.
+            mMovieAdapter.addMovies(mFavorites.getFavorites());
+        }
     }
 
     //----------------------------------------------------------------------------------------------
