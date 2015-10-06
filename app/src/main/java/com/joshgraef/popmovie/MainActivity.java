@@ -6,12 +6,18 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
-public class MainActivity extends Activity {
+import com.joshgraef.popmovie.Models.Movie;
+
+public class MainActivity extends Activity implements MainActivityFragment.Callbacks{
+
+    private boolean mTwoPane;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mTwoPane = (findViewById(R.id.movie_detail_container) != null);
     }
 
 
@@ -36,5 +42,24 @@ public class MainActivity extends Activity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onMovieSelected(Movie movie) {
+        if (mTwoPane) {
+            Bundle args = new Bundle();
+            args.putParcelable(MovieDetailsFragment.MOVIE_DETAILS, movie);
+
+            MovieDetailsFragment movieDetails = new MovieDetailsFragment();
+            movieDetails.setArguments(args);
+
+            // Send to movie details fragment
+            getFragmentManager().beginTransaction()
+                    .replace(R.id.movie_detail_container, movieDetails)
+                    .commit();
+        } else {
+            Intent intent = new Intent(this, MovieDetails.class).putExtra(MovieDetailsFragment.MOVIE_DETAILS, movie);
+            startActivity(intent);
+        }
     }
 }

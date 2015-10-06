@@ -2,7 +2,6 @@ package com.joshgraef.popmovie;
 
 import android.app.Fragment;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -28,6 +27,15 @@ import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 
 public class MainActivityFragment extends Fragment {
+
+    public interface Callbacks {
+        public void onMovieSelected(Movie movie);
+    }
+
+    private static Callbacks sMovieCallback = new Callbacks() {
+        @Override
+        public void onMovieSelected(Movie movie) {}
+    };
 
     final static String MOVIE_LIST = "movielist";
     final static String SORT_PREF = "sortpref";
@@ -73,7 +81,7 @@ public class MainActivityFragment extends Fragment {
         super.onSaveInstanceState(outState);
 
         outState.putParcelableArrayList(MOVIE_LIST, mMovieAdapter.getMovieList());
-        outState.putString(SORT_PREF, mPrefs.getString(getString(R.string.pref_sort_by), getString(R.string.pref_sort_by_popularity)) );
+        outState.putString(SORT_PREF, mPrefs.getString(getString(R.string.pref_sort_by), getString(R.string.pref_sort_by_popularity)));
     }
 
     //----------------------------------------------------------------------------------------------
@@ -91,11 +99,7 @@ public class MainActivityFragment extends Fragment {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                     Movie m = mMovieAdapter.getItem(position);
-
-                    // Put parcelable intent through to new activity
-                    Intent intent = new Intent(getActivity(), MovieDetails.class);
-                    intent.putExtra("MOVIE", m);
-                    startActivity(intent);
+                    ((Callbacks) getActivity()).onMovieSelected(m);
                 }
             });
         }

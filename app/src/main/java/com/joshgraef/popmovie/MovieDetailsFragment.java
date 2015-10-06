@@ -53,6 +53,7 @@ public class MovieDetailsFragment extends Fragment {
     final static String SAVED_MOVIE = "savedmovie";
     final static String SAVED_TRAILERS = "savedtrailers";
     final static String SAVED_REVIEWS = "savedreviews";
+    static final String MOVIE_DETAILS = "moviedetails";
 
     private Movie mMovie;
     private List<Video> mVideos;
@@ -74,8 +75,8 @@ public class MovieDetailsFragment extends Fragment {
 
         Bundle args = getArguments();
         // Come here from another activity
-        if(args != null && savedInstanceState != null) {
-            mMovie = args.getParcelable("MOVIE");
+        if(args != null) {
+            mMovie = args.getParcelable(MOVIE_DETAILS);
             getTrailersAndReviews(inflater);
         }
         // Maybe a rotation change? Load the stuff that we have cached already
@@ -91,8 +92,8 @@ public class MovieDetailsFragment extends Fragment {
                 lvReviews.addView( getReviewView(review, inflater) );
         }
         // Have stuff saved as a parcel, but still need to get trailers and reviews
-        else if (intent != null && intent.hasExtra("MOVIE")) {
-            mMovie = intent.getParcelableExtra("MOVIE");
+        else if (intent != null && intent.hasExtra(MOVIE_DETAILS)) {
+            mMovie = intent.getParcelableExtra(MOVIE_DETAILS);
             getTrailersAndReviews(inflater);
         }
         else
@@ -151,6 +152,9 @@ public class MovieDetailsFragment extends Fragment {
     //----------------------------------------------------------------------------------------------
     // Connect to the MovieDB API and get reviews and trailers
     private void getTrailersAndReviews(final LayoutInflater inflater) {
+        if(mMovie == null)
+            return;
+
         RestAdapter restAdapter = new RestAdapter.Builder().setEndpoint(IMovieDB.API_BASE_URL).build();
         IMovieDB movieDB = restAdapter.create(IMovieDB.class);
 
